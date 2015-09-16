@@ -8,7 +8,7 @@ use File::chdir;
 use File::Temp qw(tempdir);
 use Test::More;
 
-use Complete::Util qw(complete_file);
+use Complete::File qw(complete_file);
 
 sub mkfiles { do { open my($fh), ">$_" or die "Can't mkfile $_" } for @_ }
 sub mkdirs  { do { mkdir $_ or die "Can't mkdir $_" } for @_ }
