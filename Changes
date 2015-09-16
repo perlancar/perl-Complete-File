@@ -1,0 +1,6 @@
+Revision history for Complete-File
+
+0.01    2015-09-16 (PERLANCAR)
+
+        - First release, split from Complete-Util to avoid circular dependencies
+          (Complete-Path is adding fuzzy matching, which uses Complete::Util).
