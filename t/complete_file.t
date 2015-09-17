@@ -13,6 +13,7 @@ use Complete::File qw(complete_file);
 sub mkfiles { do { open my($fh), ">$_" or die "Can't mkfile $_" } for @_ }
 sub mkdirs  { do { mkdir $_ or die "Can't mkdir $_" } for @_ }
 
+local $Complete::Setting::OPT_FUZZY = 0;
 local $Complete::Setting::OPT_DIG_LEAF = 0;
 
 my $rootdir = tempdir(CLEANUP=>1);
@@ -74,17 +75,17 @@ subtest "opt: ci" => sub {
     test_complete(
         word      => 'f',
         ci        => 1,
-        result    => ["Food/", "foo/"],
+        result    => ["foo/", "Food/"],
     );
     test_complete(
         word      => 'F',
         ci        => 1,
-        result    => ["Food/", "foo/"],
+        result    => ["foo/", "Food/"],
     );
     test_complete(
         word      => 'Food/f',
         ci        => 1,
-        result    => ["Food/F2", "Food/f1"],
+        result    => ["Food/f1", "Food/F2"],
     );
     # XXX test foo/ and Foo/ exists, but this requires that fs is case-sensitive
 };
@@ -122,6 +123,8 @@ subtest "opt: map_case" => sub {
 # XXX test opt: starting_path
 # XXX test opt: allow_dot=0
 # XXX test opt: handle_tilde=0
+
+# XXX test opt: fuzzy
 
 DONE_TESTING:
 $CWD = "/";

@@ -38,6 +38,10 @@ $SPEC{complete_file} = {
             summary => 'Case-insensitive matching',
             schema  => 'bool',
         },
+        fuzzy => {
+            summary => 'Fuzzy matching',
+            schema  => ['int*', min=>0],
+        },
         map_case => {
             schema  => 'bool',
         },
@@ -110,6 +114,7 @@ sub complete_file {
     my %args   = @_;
     my $word   = $args{word} // "";
     my $ci          = $args{ci} // $Complete::Setting::OPT_CI;
+    my $fuzzy       = $args{fuzzy} // $Complete::Setting::OPT_FUZZY;
     my $map_case    = $args{map_case} // $Complete::Setting::OPT_MAP_CASE;
     my $exp_im_path = $args{exp_im_path} // $Complete::Setting::OPT_EXP_IM_PATH;
     my $dig_leaf    = $args{dig_leaf} // $Complete::Setting::OPT_DIG_LEAF;
@@ -192,6 +197,7 @@ sub complete_file {
         word => $word,
 
         ci => $ci,
+        fuzzy => $fuzzy,
         map_case => $map_case,
         exp_im_path => $exp_im_path,
         dig_leaf => $dig_leaf,
