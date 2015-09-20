@@ -1,5 +1,10 @@
 Revision history for Complete-File
 
+0.37    2015-09-20 (PERLANCAR)
+
+	- Add fuzzy matching.
+
+
 0.36    2015-09-16 (PERLANCAR)
 
         - First release, split from Complete-Util to avoid circular dependencies
