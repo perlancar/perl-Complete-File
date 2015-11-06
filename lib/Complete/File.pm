@@ -13,6 +13,7 @@ require Exporter;
 our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(
                        complete_file
+                       complete_dir
                );
 
 our %SPEC;
@@ -193,6 +194,16 @@ sub complete_file {
         };
     }
 
+    if ($args{_dir}) {
+        my $orig_filter = $filter;
+        $filter = sub {
+            my $name = shift;
+            return 0 if $orig_filter && !$orig_filter->($name);
+            return 0 unless (-d $name);
+            1;
+        };
+    }
+
     Complete::Path::complete_path(
         word => $word,
 
@@ -208,6 +219,19 @@ sub complete_file {
         starting_path => $starting_path,
         result_prefix => $result_prefix,
     );
+}
+
+$SPEC{complete_dir} = do {
+    my $spec = {%{ $SPEC{complete_file} }}; # shallow copy
+
+    $spec->{summary} = 'Complete directory from local filesystem';
+
+    $spec;
+};
+sub complete_dir {
+    my %args = @_;
+
+    complete_file(%args, _dir=>1);
 }
 
 1;
