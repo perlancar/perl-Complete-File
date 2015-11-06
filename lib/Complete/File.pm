@@ -224,7 +224,9 @@ sub complete_file {
 $SPEC{complete_dir} = do {
     my $spec = {%{ $SPEC{complete_file} }}; # shallow copy
 
-    $spec->{summary} = 'Complete directory from local filesystem';
+    $spec->{summary} = 'Complete directory from local filesystem '.
+        '(wrapper for complete_dir() that only picks directories)';
+    delete $spec->{args}{file_regex_filter};
 
     $spec;
 };
