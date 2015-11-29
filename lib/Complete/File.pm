@@ -7,7 +7,7 @@ use 5.010001;
 use strict;
 use warnings;
 
-use Complete::Setting;
+use Complete::Common qw(:all);
 
 require Exporter;
 our @ISA = qw(Exporter);
@@ -30,28 +30,7 @@ $SPEC{complete_file} = {
         choose_one => [qw/filter file_regex_filter/],
     },
     args => {
-        word => {
-            schema  => [str=>{default=>''}],
-            req     => 1,
-            pos     => 0,
-        },
-        ci => {
-            summary => 'Case-insensitive matching',
-            schema  => 'bool',
-        },
-        fuzzy => {
-            summary => 'Fuzzy matching',
-            schema  => ['int*', min=>0],
-        },
-        map_case => {
-            schema  => 'bool',
-        },
-        exp_im_path => {
-            schema  => 'bool',
-        },
-        dig_leaf => {
-            schema  => 'bool',
-        },
+        %arg_word,
         filter => {
             summary => 'Only return items matching this filter',
             description => <<'_',
@@ -114,11 +93,6 @@ sub complete_file {
 
     my %args   = @_;
     my $word   = $args{word} // "";
-    my $ci          = $args{ci} // $Complete::Setting::OPT_CI;
-    my $fuzzy       = $args{fuzzy} // $Complete::Setting::OPT_FUZZY;
-    my $map_case    = $args{map_case} // $Complete::Setting::OPT_MAP_CASE;
-    my $exp_im_path = $args{exp_im_path} // $Complete::Setting::OPT_EXP_IM_PATH;
-    my $dig_leaf    = $args{dig_leaf} // $Complete::Setting::OPT_DIG_LEAF;
     my $handle_tilde = $args{handle_tilde} // 1;
     my $allow_dot   = $args{allow_dot} // 1;
     my $filter = $args{filter};
@@ -206,13 +180,6 @@ sub complete_file {
 
     Complete::Path::complete_path(
         word => $word,
-
-        ci => $ci,
-        fuzzy => $fuzzy,
-        map_case => $map_case,
-        exp_im_path => $exp_im_path,
-        dig_leaf => $dig_leaf,
-
         list_func => $list,
         is_dir_func => sub { -d $_[0] },
         filter_func => $filter,

@@ -13,8 +13,11 @@ use Complete::File qw(complete_file);
 sub mkfiles { do { open my($fh), ">$_" or die "Can't mkfile $_" } for @_ }
 sub mkdirs  { do { mkdir $_ or die "Can't mkdir $_" } for @_ }
 
-local $Complete::Setting::OPT_FUZZY = 0;
-local $Complete::Setting::OPT_DIG_LEAF = 0;
+local $Complete::Common::OPT_CI = 0;
+local $Complete::Common::OPT_MAP_CASE = 0;
+local $Complete::Common::OPT_EXP_IM_PATH = 0;
+local $Complete::Common::OPT_FUZZY = 0;
+local $Complete::Common::OPT_DIG_LEAF = 0;
 
 my $rootdir = tempdir(CLEANUP=>1);
 $CWD = $rootdir;
@@ -71,60 +74,13 @@ test_complete(
     result    => ["foo/f1", "foo/f2"],
 );
 
-subtest "opt: ci" => sub {
-    test_complete(
-        word      => 'f',
-        ci        => 1,
-        result    => ["foo/", "Food/"],
-    );
-    test_complete(
-        word      => 'F',
-        ci        => 1,
-        result    => ["foo/", "Food/"],
-    );
-    test_complete(
-        word      => 'Food/f',
-        ci        => 1,
-        result    => ["Food/f1", "Food/F2"],
-    );
-    # XXX test foo/ and Foo/ exists, but this requires that fs is case-sensitive
-};
-
-subtest "opt: exp_im_path" => sub {
-    test_complete(
-        word   => 'F/S/o',
-        exp_im_path => 1,
-        result => ["Food/Sub4/one", "Food/Sub4/one-two", "Food/Sub4/one_three"],
-    );
-};
-
-subtest "opt: map_case" => sub {
-    test_complete(
-        word   => 'Food/Sub4/one-',
-        map_case => 0,
-        result => ["Food/Sub4/one-two"],
-    );
-    test_complete(
-        word   => 'Food/Sub4/one-',
-        map_case => 1,
-        result => ["Food/Sub4/one-two", "Food/Sub4/one_three"],
-    );
-    test_complete(
-        word   => 'Food/Sub4/one_',
-        map_case => 1,
-        result => ["Food/Sub4/one-two", "Food/Sub4/one_three"],
-    );
-};
-
 # XXX test ../blah
 # XXX test /abs
 # XXX test ~/blah and ~user/blah
 
-# XXX test opt: starting_path
-# XXX test opt: allow_dot=0
-# XXX test opt: handle_tilde=0
-
-# XXX test opt: fuzzy
+# XXX test opt:starting_path
+# XXX test opt:allow_dot=0
+# XXX test opt:handle_tilde=0
 
 DONE_TESTING:
 $CWD = "/";
@@ -136,9 +92,6 @@ sub test_complete {
     my $name = $args{name} // $args{word};
     my $res = complete_file(
         word=>$args{word}, array=>$args{array},
-        ci=>$args{ci} // 0,
-        map_case=>$args{map_case} // 0,
-        exp_im_path=>$args{exp_im_path} // 0,
         @{ $args{other_args} // [] });
     is_deeply($res, $args{result}, "$name (result)") or diag explain($res);
 }
