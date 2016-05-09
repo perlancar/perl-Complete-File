@@ -1,5 +1,11 @@
 Revision history for Complete-File
 
+0.40    2016-05-09 (PERLANCAR)
+
+	- Convert filenames to Unicode strings instead of just octets, to
+	  properly display Unicode filenames.
+
+
 0.39    2015-11-29 (PERLANCAR)
 
 	- Adjust to Complete::Common 0.21
