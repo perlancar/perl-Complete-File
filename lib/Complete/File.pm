@@ -89,6 +89,7 @@ _
 };
 sub complete_file {
     require Complete::Path;
+    require Encode;
     require File::Glob;
 
     my %args   = @_;
@@ -106,7 +107,7 @@ sub complete_file {
         $result_prefix = "$1/";
         my @dir = File::Glob::glob($1); # glob will expand ~foo to /home/foo
         return [] unless @dir;
-        $starting_path = $dir[0];
+        $starting_path = Encode::decode('UTF-8', $dir[0]);
     } elsif ($allow_dot && $word =~ s!\A((?:\.\.?/+)+|/+)!!) {
         # just an optimization to skip sequences of '../'
         $starting_path = $1;
@@ -127,7 +128,7 @@ sub complete_file {
             # skip . and .. if leaf is empty, like in bash
             next if ($_ eq '.' || $_ eq '..') && $intdir eq '';
             next if $isint && !(-d "$path/$_");
-            push @res, $_;
+            push @res, Encode::decode('UTF-8', $_);
         }
         \@res;
     };
