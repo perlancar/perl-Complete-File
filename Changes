@@ -1,5 +1,10 @@
 Revision history for Complete-File
 
+0.42    2016-10-20 (PERLANCAR)
+
+	- Fix Rinci metadata, forgot to shallow copy 'args' too.
+
+
 0.41    2016-10-19 (PERLANCAR)
 
 	- Allow specifying more than one filter options.
