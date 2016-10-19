@@ -1,5 +1,12 @@
 Revision history for Complete-File
 
+0.41    2016-10-19 (PERLANCAR)
+
+	- Allow specifying more than one filter options.
+
+        - complete_file(): Add filter option: exclude_dir, file_ext_filter.
+
+
 0.40    2016-05-09 (PERLANCAR)
 
 	- Convert filenames to Unicode strings instead of just octets, to
