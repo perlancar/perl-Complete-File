@@ -268,6 +268,7 @@ $SPEC{complete_dir} = do {
 
     $spec->{summary} = 'Complete directory from local filesystem '.
         '(wrapper for complete_dir() that only picks directories)';
+    $spec->{args} = { %{$spec->{args}} }; # shallow copy of args
     delete $spec->{args}{file_regex_filter};
     delete $spec->{args}{file_ext_filter};
     delete $spec->{args}{exclude_dir};
