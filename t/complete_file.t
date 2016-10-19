@@ -32,6 +32,11 @@ mkfiles(qw(Food/f1 Food/F2));
 
 mkfiles(qw(Food/Sub4/one Food/Sub4/one-two Food/Sub4/one_three));
 
+mkdirs (qw(dir1/sub1/ext));
+mkfiles(qw(dir1/sub1/ext/foo.bak));
+mkfiles(qw(dir1/sub1/ext/foo.txt));
+mkfiles(qw(dir1/sub1/ext/foo.tmp));
+
 test_complete(
     word      => '',
     result    => [qw(.h1 Food/ a ab abc ac bb d dir1/ dir2/ foo/)],
@@ -46,23 +51,48 @@ test_complete(
     result    => [qw(d dir1/ dir2/)],
 );
 test_complete(
-    name       => 'filter (file only)',
+    name       => 'opt:filter (string, file only)',
     word       => 'd',
     other_args => [filter=>'-d'],
     result     => [qw(d)],
 );
 test_complete(
-    name       => 'dir only, use |, not very meaningful test',
+    name       => 'opt:filter (string, dir only, use |, not very meaningful test',
     word       => 'd',
     other_args => [filter=>'d|-f'],
     result     => [qw(dir1/ dir2/)],
 );
 test_complete(
-    name       => 'code filter',
+    name       => 'opt:filter (code)',
     word       => '',
     other_args => [filter=>sub {my $res=(-d $_[0]) && $_[0] =~ m!\./f!}],
     result     => [qw(foo/)],
 );
+test_complete(
+    name       => 'opt:exclude_dir',
+    word       => 'd',
+    other_args => [exclude_dir=>1],
+    result     => [qw(d)],
+);
+test_complete(
+    name       => 'opt:file_regex_filter',
+    word       => '',
+    other_args => [file_regex_filter=>qr/ab/],
+    result     => [qw(Food/ ab abc dir1/ dir2/ foo/)],
+);
+test_complete(
+    name       => 'opt:file_ext_filter (re)',
+    word       => 'dir1/sub1/ext/',
+    other_args => [file_ext_filter=>qr/^t/],
+    result     => [qw(dir1/sub1/ext/foo.tmp dir1/sub1/ext/foo.txt)],
+);
+test_complete(
+    name       => 'opt:file_ext_filter (array)',
+    word       => 'dir1/sub1/ext/',
+    other_args => [file_ext_filter=>[qw/txt tmp/]],
+    result     => [qw(dir1/sub1/ext/foo.tmp dir1/sub1/ext/foo.txt)],
+);
+
 test_complete(
     name      => 'subdir 1',
     word      => 'foo/',

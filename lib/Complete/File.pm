@@ -26,9 +26,6 @@ $SPEC{':package'} = {
 $SPEC{complete_file} = {
     v => 1.1,
     summary => 'Complete file and directory from local filesystem',
-    args_rels => {
-        choose_one => [qw/filter file_regex_filter/],
-    },
     args => {
         %arg_word,
         filter => {
@@ -50,6 +47,7 @@ included.
 
 _
             schema  => ['any*' => {of => ['str*', 'code*']}],
+            tags => ['category:filtering'],
         },
         file_regex_filter => {
             summary => 'Filter shortcut for file regex',
@@ -61,6 +59,30 @@ regular files, and the file must match a regex pattern. This use-case is common.
 
 _
             schema => 're*',
+            tags => ['category:filtering'],
+        },
+        exclude_dir => {
+            schema => 'bool*',
+            description => <<'_',
+
+This is also an alternative to specifying full `filter`. Set this to true if you
+do not want directories.
+
+If you only want directories, take a look at `complete_dir()`.
+
+_
+            tags => ['category:filtering'],
+        },
+        file_ext_filter => {
+            schema => ['any*', of=>['re*', ['array*',of=>'str*']]],
+            description => <<'_',
+
+This is also an alternative to specifying full `filter` or `file_regex_filter`.
+You can set this to a regex or a set of extensions to accept. Note that like in
+`file_regex_filter`, directories of any name is also still allowed.
+
+_
+            tags => ['category:filtering'],
         },
         starting_path => {
             schema  => 'str*',
@@ -96,7 +118,6 @@ sub complete_file {
     my $word   = $args{word} // "";
     my $handle_tilde = $args{handle_tilde} // 1;
     my $allow_dot   = $args{allow_dot} // 1;
-    my $filter = $args{filter};
 
     # if word is starts with "~/" or "~foo/" replace it temporarily with user's
     # name (so we can restore it back at the end). this is to mimic bash
@@ -134,8 +155,11 @@ sub complete_file {
     };
 
     # prepare filter_func
-    if ($filter && !ref($filter)) {
-        my @seqs = split /\s*\|\s*/, $filter;
+
+    # from the filter option
+    my $filter;
+    if ($args{filter} && !ref($args{filter})) {
+        my @seqs = split /\s*\|\s*/, $args{filter};
         $filter = sub {
             my $name = shift;
             my @st = stat($name) or return 0;
@@ -159,8 +183,14 @@ sub complete_file {
             }
             $pass;
         };
-    } elsif (!$filter && $args{file_regex_filter}) {
-        $filter = sub {
+    } elsif ($args{filter} && ref($args{filter}) eq 'CODE') {
+        $filter = $args{filter};
+    }
+
+    # from the file_regex_filter option
+    my $filter_fregex;
+    if ($args{file_regex_filter}) {
+        $filter_fregex = sub {
             my $name = shift;
             return 1 if -d $name;
             return 0 unless -f _;
@@ -169,21 +199,65 @@ sub complete_file {
         };
     }
 
-    if ($args{_dir}) {
-        my $orig_filter = $filter;
-        $filter = sub {
+    # from the file_ext_filter option
+    my $filter_fext;
+    if ($args{file_ext_filter} && ref $args{file_ext_filter} eq 'Regexp') {
+        $filter_fext = sub {
             my $name = shift;
-            return 0 if $orig_filter && !$orig_filter->($name);
-            return 0 unless (-d $name);
-            1;
+            return 1 if -d $name;
+            return 0 unless -f _;
+            my $ext = $name =~ /\.(\w+)\z/ ? $1 : '';
+            return 1 if $ext =~ $args{file_ext_filter};
+            0;
+        };
+    } elsif ($args{file_ext_filter} && ref $args{file_ext_filter} eq 'ARRAY') {
+        $filter_fext = sub {
+            my $name = shift;
+            return 1 if -d $name;
+            return 0 unless -f _;
+            my $ext = $name =~ /\.(\w+)\z/ ? $1 : '';
+            if ($Complete::Common::OPT_CI) {
+                $ext = lc($ext);
+                for my $e (@{ $args{file_ext_filter} }) {
+                    return 1 if $ext eq lc($e);
+                }
+            } else {
+                for my $e (@{ $args{file_ext_filter} }) {
+                    return 1 if $ext eq $e;
+                }
+            }
+            0;
         };
     }
+
+    # from _dir (used by complete_dir)
+    my $filter_dir;
+    if ($args{_dir}) {
+        $filter_dir = sub { return 0 unless (-d $_[0]); 1 };
+    }
+
+    # from exclude_dir option
+    my $filter_xdir;
+    if ($args{exclude_dir}) {
+        $filter_xdir = sub { return 0 if (-d $_[0]); 1 };
+    }
+
+    # final filter sub
+    my $final_filter = sub {
+        my $name = shift;
+        if ($filter_dir)    { return 0 unless $filter_dir->($name)    }
+        if ($filter_xdir)   { return 0 unless $filter_xdir->($name)   }
+        if ($filter)        { return 0 unless $filter->($name)        }
+        if ($filter_fregex) { return 0 unless $filter_fregex->($name) }
+        if ($filter_fext)   { return 0 unless $filter_fext->($name)   }
+        1;
+    };
 
     Complete::Path::complete_path(
         word => $word,
         list_func => $list,
         is_dir_func => sub { -d $_[0] },
-        filter_func => $filter,
+        filter_func => $final_filter,
         starting_path => $starting_path,
         result_prefix => $result_prefix,
     );
@@ -195,6 +269,8 @@ $SPEC{complete_dir} = do {
     $spec->{summary} = 'Complete directory from local filesystem '.
         '(wrapper for complete_dir() that only picks directories)';
     delete $spec->{args}{file_regex_filter};
+    delete $spec->{args}{file_ext_filter};
+    delete $spec->{args}{exclude_dir};
 
     $spec;
 };
