@@ -126,7 +126,7 @@ sub complete_file {
     my $starting_path = $args{starting_path} // '.';
     if ($handle_tilde && $word =~ s!\A(~[^/]*)/!!) {
         $result_prefix = "$1/";
-        my @dir = File::Glob::glob($1); # glob will expand ~foo to /home/foo
+        my @dir = File::Glob::bsd_glob($1); # glob will expand ~foo to /home/foo
         return [] unless @dir;
         $starting_path = Encode::decode('UTF-8', $dir[0]);
     } elsif ($allow_dot && $word =~ s!\A((?:\.\.?/+)+|/+)!!) {
