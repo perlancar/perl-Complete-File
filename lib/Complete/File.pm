@@ -8,6 +8,7 @@ use strict;
 use warnings;
 
 use Complete::Common qw(:all);
+use Complete::Util qw(hashify_answer);
 
 require Exporter;
 our @ISA = qw(Exporter);
@@ -253,7 +254,7 @@ sub complete_file {
         1;
     };
 
-    Complete::Path::complete_path(
+    my $compres = Complete::Path::complete_path(
         word => $word,
         list_func => $list,
         is_dir_func => sub { -d $_[0] },
@@ -261,6 +262,10 @@ sub complete_file {
         starting_path => $starting_path,
         result_prefix => $result_prefix,
     );
+
+    # XXX why doesn't Complete::Path return hash answer with path_sep? we add
+    # workaround here to enable path mode.
+    hashify_answer($compres, {path_sep=>'/'});
 }
 
 $SPEC{complete_dir} = do {
