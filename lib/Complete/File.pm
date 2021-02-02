@@ -104,6 +104,9 @@ _
             schema  => 'bool',
             default => 1,
         },
+        recurse => {
+            schema => 'bool*',
+        },
     },
     result_naked => 1,
     result => {
@@ -117,6 +120,7 @@ sub complete_file {
 
     my %args   = @_;
     my $word   = $args{word} // "";
+    my $recurse = $args{recurse};
     my $handle_tilde = $args{handle_tilde} // 1;
     my $allow_dot   = $args{allow_dot} // 1;
 
@@ -261,6 +265,7 @@ sub complete_file {
         filter_func => $final_filter,
         starting_path => $starting_path,
         result_prefix => $result_prefix,
+        recurse => $recurse,
     );
 
     # XXX why doesn't Complete::Path return hash answer with path_sep? we add
