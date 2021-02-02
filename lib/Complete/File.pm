@@ -106,6 +106,7 @@ _
         },
         recurse => {
             schema => 'bool*',
+            cmdline_aliases => {r=>{}},
         },
     },
     result_naked => 1,
