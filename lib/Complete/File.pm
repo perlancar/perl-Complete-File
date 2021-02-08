@@ -108,6 +108,19 @@ _
             schema => 'bool*',
             cmdline_aliases => {r=>{}},
         },
+        recurse_matching => {
+            schema => ['str*', in=>['level-by-level', 'all-at-once']],
+            default => 'level-by-level',
+        },
+        exclude_leaf => {
+            schema => 'bool*',
+        },
+        exclude_dir => {
+            schema => 'bool*',
+        },
+    },
+    args_rels => {
+        dep_all => [recurse_matching => ['recurse']],
     },
     result_naked => 1,
     result => {
@@ -121,7 +134,6 @@ sub complete_file {
 
     my %args   = @_;
     my $word   = $args{word} // "";
-    my $recurse = $args{recurse};
     my $handle_tilde = $args{handle_tilde} // 1;
     my $allow_dot   = $args{allow_dot} // 1;
 
@@ -266,7 +278,10 @@ sub complete_file {
         filter_func => $final_filter,
         starting_path => $starting_path,
         result_prefix => $result_prefix,
-        recurse => $recurse,
+        recurse => $args{recurse},
+        recurse_matching => $args{recurse_matching},
+        exclude_leaf => $args{exclude_leaf},
+        exclude_nonleaf => $args{exclude_nonleaf} // $args{exclude_dir},
     );
 
     # XXX why doesn't Complete::Path return hash answer with path_sep? we add
