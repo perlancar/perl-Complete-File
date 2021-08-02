@@ -2,3 +2,4 @@ Complete-File-*
 .build
 *~
 nytprof*
+.DS_Store
